@@ -1,37 +1,31 @@
 package com.example.myapplication.ui.screens
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import coil.compose.AsyncImage
 import com.example.myapplication.navigation.AppScreens
-import com.example.myapplication.model.DadosMockados
 import com.example.myapplication.ui.components.BottomNavigationBar
+import com.example.myapplication.viewmodel.BuscaViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BuscaScreen(navController: NavHostController) {
-    var searchText by remember { mutableStateOf("") }
-    val receitas = remember { DadosMockados.listaDeReceitas }
-    val filteredReceitas = remember(searchText) {
-        if (searchText.isBlank()) {
-            receitas
-        } else {
-            receitas.filter {
-                it.nome.contains(searchText, ignoreCase = true) ||
-                        it.ingredientes.any { ingrediente -> ingrediente.contains(searchText, ignoreCase = true) }
-            }
-        }
-    }
+fun BuscaScreen(
+    navController: NavHostController,
+    buscaViewModel: BuscaViewModel = viewModel()
+) {
+    val searchText by buscaViewModel.searchText.collectAsState()
+    val searchResults by buscaViewModel.searchResults.collectAsState()
+    val isLoading by buscaViewModel.isLoading.collectAsState()
 
     Scaffold(
         topBar = {
@@ -41,11 +35,6 @@ fun BuscaScreen(navController: NavHostController) {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Voltar")
                     }
-                },
-                actions = {
-                    IconButton(onClick = {  }) {
-                        Icon(Icons.Filled.MoreVert, contentDescription = "Menu")
-                    }
                 }
             )
         },
@@ -54,48 +43,87 @@ fun BuscaScreen(navController: NavHostController) {
         Column(
             modifier = Modifier
                 .padding(paddingValues)
-                .padding(16.dp)
                 .fillMaxSize()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             OutlinedTextField(
                 value = searchText,
-                onValueChange = { searchText = it },
-                label = { Text("Buscar Receitas") },
-                modifier = Modifier.fillMaxWidth()
+                onValueChange = { buscaViewModel.onSearchTextChanged(it) },
+                label = { Text("Pesquisar receitas...") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+                leadingIcon = {
+                    Icon(Icons.Filled.Search, contentDescription = "Ícone de busca")
+                }
             )
+
             Spacer(modifier = Modifier.height(16.dp))
-            LazyColumn {
-                items(filteredReceitas) { receita ->
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                navController.navigate(AppScreens.DetalheScreen.createRoute(receita.id))
-                            },
-                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+
+            if (isLoading) {
+                CircularProgressIndicator(modifier = Modifier.padding(16.dp))
+                Text("Buscando receitas...", style = MaterialTheme.typography.bodyMedium)
+            } else {
+                if (searchText.isNotBlank() && searchResults.isEmpty()) {
+                    Text("Nenhum resultado encontrado para \"$searchText\".",
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.padding(top = 16.dp)
+                    )
+                } else if (searchText.isBlank()) {
+                    Text("Digite para buscar receitas.",
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.padding(top = 16.dp)
+                    )
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            AsyncImage(
-                                model = receita.imagemUrl,
-                                contentDescription = receita.nome,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(120.dp)
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = receita.nome,
-                                style = MaterialTheme.typography.titleMedium
-                            )
-                            Text(
-                                text = receita.descricaoCurta,
-                                style = MaterialTheme.typography.bodyMedium
+                        items(searchResults) { receita ->
+                            ReceitaCard(
+                                receita = receita,
+                                onClick = {
+                                    navController.navigate(AppScreens.DetalheScreen.createRoute(receita.id))
+                                }
                             )
                         }
                     }
-                    Spacer(modifier = Modifier.height(8.dp))
                 }
             }
         }
     }
 }
+
+// **IMPORTANTE**: Você precisa ter um `ReceitaCard` ou similar definido em outro lugar.
+// Se você não tiver, um exemplo simples:
+/*
+@Composable
+fun ReceitaCard(receita: Receita, onClick: () -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Se tiver imagem na receita:
+            // AsyncImage(
+            //     model = receita.imagemUrl,
+            //     contentDescription = receita.nome,
+            //     modifier = Modifier
+            //         .size(64.dp)
+            //         .clip(MaterialTheme.shapes.small),
+            //     contentScale = ContentScale.Crop
+            // )
+            // Spacer(modifier = Modifier.width(16.dp))
+            Column {
+                Text(receita.nome, style = MaterialTheme.typography.titleMedium)
+                Text(receita.descricaoCurta, style = MaterialTheme.typography.bodySmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            }
+        }
+    }
+}
+*/

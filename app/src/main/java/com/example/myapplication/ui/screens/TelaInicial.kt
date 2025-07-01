@@ -136,7 +136,7 @@ fun TelaInicial(navController: NavHostController) {
 }
 
 @Composable
-private fun ReceitaCard(receita: Receita, onClick: () -> Unit) {
+fun ReceitaCard(receita: Receita, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()

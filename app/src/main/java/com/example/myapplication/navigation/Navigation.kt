@@ -1,3 +1,5 @@
+// app/src/main/java/com/example/myapplication/navigation/AppNavigation.kt
+
 package com.example.myapplication.navigation
 
 import androidx.compose.runtime.Composable
@@ -16,6 +18,7 @@ import com.example.myapplication.ui.screens.FeedbackScreen
 import com.example.myapplication.ui.screens.ListaComprasScreen
 import com.example.myapplication.ui.screens.TelaInicial
 import com.example.myapplication.viewmodel.ListaComprasViewModel
+import com.example.myapplication.viewmodel.BuscaViewModel
 
 sealed class AppScreens(val route: String) {
     object TelaInicialScreen : AppScreens("tela_inicial")
@@ -24,7 +27,7 @@ sealed class AppScreens(val route: String) {
     object AjudaScreen : AppScreens("ajuda")
     object BuscaScreen : AppScreens("busca")
     object ListaComprasScreen: AppScreens("lista_compras")
-    object FeedbackScreen: AppScreens("feedback")
+    object FeedbackScreen : AppScreens("feedback_screen")
 
     object DetalheScreen : AppScreens("detalhe_receita/{receitaId}") {
         fun createRoute(receitaId: Int): String {
@@ -36,6 +39,8 @@ sealed class AppScreens(val route: String) {
 @Composable
 fun AppNavigation(settingsViewModel: SettingsViewModel) {
     val navController = rememberNavController()
+    val listaComprasViewModel: ListaComprasViewModel = viewModel()
+    val buscaViewModel: BuscaViewModel = viewModel()
 
     NavHost(
         navController = navController,
@@ -54,18 +59,18 @@ fun AppNavigation(settingsViewModel: SettingsViewModel) {
             AjudaScreen(navController)
         }
         composable(AppScreens.BuscaScreen.route) {
-            BuscaScreen(navController)
+            BuscaScreen(navController, buscaViewModel)
         }
         composable(AppScreens.DetalheScreen.route) { backStackEntry ->
             val receitaId = backStackEntry.arguments?.getString("receitaId")?.toIntOrNull()
             if (receitaId != null) {
-                DetalheScreen(navController = navController, receitaId = receitaId, listaComprasViewModel = viewModel())
+                DetalheScreen(navController = navController, receitaId = receitaId, listaComprasViewModel = listaComprasViewModel)
             } else {
                 Text("Erro: receitaId inválido ou ausente")
             }
         }
         composable(AppScreens.ListaComprasScreen.route) {
-            ListaComprasScreen(navController = navController, listaComprasViewModel = viewModel())
+            ListaComprasScreen(navController = navController, listaComprasViewModel = listaComprasViewModel)
         }
         composable(AppScreens.FeedbackScreen.route) {
             FeedbackScreen(navController = navController)
