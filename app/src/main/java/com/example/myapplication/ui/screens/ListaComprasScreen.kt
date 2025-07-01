@@ -1,5 +1,7 @@
 package com.example.myapplication.ui.screens
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -10,14 +12,17 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.example.myapplication.R
-import com.example.myapplication.model.ListaComprasItem
 import com.example.myapplication.ui.components.BottomNavigationBar
 import com.example.myapplication.viewmodel.ListaComprasViewModel
+import com.example.myapplication.model.ListaComprasItem
+import androidx.compose.ui.res.vectorResource
+import com.example.myapplication.R
+import com.google.android.gms.maps.model.Circle
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -25,10 +30,15 @@ fun ListaComprasScreen(
     navController: NavHostController,
     listaComprasViewModel: ListaComprasViewModel = viewModel()
 ) {
-    val shoppingList by listaComprasViewModel.listaCompras.collectAsState()
+    val listaCompras by listaComprasViewModel.listaCompras.collectAsState()
     val selectedItems by listaComprasViewModel.selectedItems.collectAsState()
     val isMultiSelectionMode by listaComprasViewModel.isMultiSelectionMode.collectAsState()
-    val progress by listaComprasViewModel.progress.collectAsState()
+    val rawProgress by listaComprasViewModel.progress.collectAsState()
+
+    val animatedProgress by animateFloatAsState(
+        targetValue = rawProgress,
+        animationSpec = tween(durationMillis = 500)
+    )
 
     var showAddItemDialog by remember { mutableStateOf(false) }
     var newItemName by remember { mutableStateOf("") }
@@ -41,8 +51,8 @@ fun ListaComprasScreen(
                         Text("Lista de Compras")
                         Spacer(modifier = Modifier.height(4.dp))
                         LinearProgressIndicator(
-                            progress = progress,
-                            modifier = Modifier.fillMaxWidth()
+                            progress = { animatedProgress },
+                            modifier = Modifier.fillMaxWidth(),
                         )
                     }
                 },
@@ -83,7 +93,7 @@ fun ListaComprasScreen(
         },
         bottomBar = { BottomNavigationBar(navController = navController) }
     ) { paddingValues ->
-        if (shoppingList.isEmpty()) {
+        if (listaCompras.isEmpty()) {
             Column(
                 modifier = Modifier
                     .padding(paddingValues)
@@ -115,8 +125,8 @@ fun ListaComprasScreen(
                     .padding(horizontal = 8.dp),
                 contentPadding = PaddingValues(bottom = 16.dp)
             ) {
-                items(shoppingList, key = { it.id }) { item ->
-                    ShoppingListItemComposable(
+                items(listaCompras, key = { it.id }) { item ->
+                    ListaComprasItemComposable(
                         item = item,
                         isSelected = selectedItems.contains(item.id),
                         isMultiSelectionMode = isMultiSelectionMode,
@@ -129,7 +139,7 @@ fun ListaComprasScreen(
                             }
                         }
                     )
-                    Divider(modifier = Modifier.padding(horizontal = 16.dp))
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                 }
             }
         }
@@ -171,14 +181,14 @@ fun ListaComprasScreen(
 }
 
 @Composable
-fun ShoppingListItemComposable(
+fun ListaComprasItemComposable(
     item: ListaComprasItem,
     isSelected: Boolean,
     isMultiSelectionMode: Boolean,
     onToggleBought: () -> Unit,
     onDeleteItem: () -> Unit,
-    onClick: () -> Unit,
-    onLongClick: () -> Unit
+    onLongClick: () -> Unit,
+    onClick: () -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -198,7 +208,6 @@ fun ShoppingListItemComposable(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-
             if (isMultiSelectionMode) {
                 Checkbox(
                     checked = isSelected,
@@ -221,7 +230,6 @@ fun ShoppingListItemComposable(
                 color = if (item.isBought) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f) else MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.weight(1f)
             )
-
 
             if (!isMultiSelectionMode) {
                 IconButton(onClick = onDeleteItem) {

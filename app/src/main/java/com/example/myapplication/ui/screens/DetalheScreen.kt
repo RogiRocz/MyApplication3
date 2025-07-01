@@ -107,7 +107,6 @@ fun DetalheScreen(navController: NavHostController, receitaId: Int?, listaCompra
                     DropdownMenuItem(
                         text = {Text("Reportar erro / Sugerir edição")},
                         onClick = {
-                            // fazer lógica pra Reportar erro / Sugerir edição
                             expandedMenu = false
                         }
                     )
