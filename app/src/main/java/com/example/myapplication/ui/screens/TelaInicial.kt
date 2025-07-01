@@ -45,9 +45,15 @@ fun TelaInicial(navController: NavHostController) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("NutriLivre") },
+                title = {
+                    Text(
+                        text = "NutriLivre",
+                        style = MaterialTheme.typography.headlineMedium
+                    )
+                        },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = GreenTheme
+                    containerColor = GreenTheme,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary
                 ),
                 actions = {
                     IconButton(onClick = { expandedMenu = true }) {
@@ -86,7 +92,6 @@ fun TelaInicial(navController: NavHostController) {
             BottomNavigationBar(navController)
         }
     ) { paddingValues ->
-
         SwipeRefresh(
             state = swipeState,
             onRefresh = {
