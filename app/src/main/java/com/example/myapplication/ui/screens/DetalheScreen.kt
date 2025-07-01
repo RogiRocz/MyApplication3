@@ -1,5 +1,6 @@
 package com.example.myapplication.ui.screens
 
+import android.content.Intent
 import android.speech.tts.TextToSpeech
 import android.speech.tts.TextToSpeech.OnInitListener
 import android.widget.Toast
@@ -9,6 +10,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Favorite
@@ -82,7 +84,13 @@ fun DetalheScreen(navController: NavHostController, receitaId: Int?, listaCompra
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text(receita?.nome ?: "Detalhe") }, actions = {
+            TopAppBar(title = { Text(receita?.nome ?: "Detalhe") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Voltar")
+                    }
+                },
+                actions = {
                 IconButton(onClick = { expandedMenu = true}) {
                     Icon(Icons.Filled.MoreVert, contentDescription = "Menu")
                 }
@@ -90,8 +98,29 @@ fun DetalheScreen(navController: NavHostController, receitaId: Int?, listaCompra
                     DropdownMenuItem(
                         text = {Text("Compartilhar")},
                         onClick = {
-                            // fazer lógica pra compartilhar
                             expandedMenu = false
+                            receita?.let { r ->
+                                val shareText = """
+                                    Confira a receita de ${r.nome} no nutriLivre!
+
+                                    Ingredientes:
+                                    ${r.ingredientes.joinToString("\n") { "- $it" }}
+
+                                    Modo de Preparo:
+                                    ${r.modoPreparo.mapIndexed { index, passo -> "${index + 1}. $passo" }.joinToString("\n")}
+
+                                    Baixe o app nutriLivre para mais receitas!
+                                """.trimIndent()
+
+                                val sendIntent: Intent = Intent().apply {
+                                    action = Intent.ACTION_SEND
+                                    putExtra(Intent.EXTRA_TEXT, shareText)
+                                    type = "text/plain"
+                                }
+
+                                val shareIntent = Intent.createChooser(sendIntent, null)
+                                context.startActivity(shareIntent)
+                            }
                         }
                     )
                     DropdownMenuItem(
@@ -108,6 +137,7 @@ fun DetalheScreen(navController: NavHostController, receitaId: Int?, listaCompra
                         text = {Text("Reportar erro / Sugerir edição")},
                         onClick = {
                             expandedMenu = false
+                            navController.navigate(AppScreens.FeedbackScreen.route)
                         }
                     )
                 }

@@ -57,7 +57,7 @@ fun TelaInicial(navController: NavHostController) {
                 ),
                 actions = {
                     IconButton(onClick = { expandedMenu = true }) {
-                        Icon(Icons.Filled.Menu, contentDescription = "Menu")
+                        Icon(Icons.Filled.Menu, contentDescription = "Menu", tint = MaterialTheme.colorScheme.onPrimary)
                     }
                     DropdownMenu(
                         expanded = expandedMenu,

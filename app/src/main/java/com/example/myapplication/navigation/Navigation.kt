@@ -12,6 +12,7 @@ import com.example.myapplication.ui.screens.BuscaScreen
 import com.example.myapplication.ui.screens.ConfiguracoesScreen
 import com.example.myapplication.ui.screens.DetalheScreen
 import com.example.myapplication.ui.screens.FavoritosScreen
+import com.example.myapplication.ui.screens.FeedbackScreen
 import com.example.myapplication.ui.screens.ListaComprasScreen
 import com.example.myapplication.ui.screens.TelaInicial
 import com.example.myapplication.viewmodel.ListaComprasViewModel
@@ -23,6 +24,7 @@ sealed class AppScreens(val route: String) {
     object AjudaScreen : AppScreens("ajuda")
     object BuscaScreen : AppScreens("busca")
     object ListaComprasScreen: AppScreens("lista_compras")
+    object FeedbackScreen: AppScreens("feedback")
 
     object DetalheScreen : AppScreens("detalhe_receita/{receitaId}") {
         fun createRoute(receitaId: Int): String {
@@ -64,6 +66,9 @@ fun AppNavigation(settingsViewModel: SettingsViewModel) {
         }
         composable(AppScreens.ListaComprasScreen.route) {
             ListaComprasScreen(navController = navController, listaComprasViewModel = viewModel())
+        }
+        composable(AppScreens.FeedbackScreen.route) {
+            FeedbackScreen(navController = navController)
         }
     }
 }
