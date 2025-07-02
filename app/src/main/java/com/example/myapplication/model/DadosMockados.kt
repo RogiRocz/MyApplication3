@@ -4,12 +4,24 @@ import com.example.myapplication.R
 import kotlinx.serialization.Serializable
 import java.util.UUID
 
-
+/**
+ * Representa uma receita culinária.
+ *
+ * @property id Identificador único da receita.
+ * @property nome Nome da receita.
+ * @property descricaoCurta Uma breve descrição da receita.
+ * @property imagemUrl Referência ao recurso drawable da imagem da receita. Pode ser um Int (ID do recurso) ou String (URL).
+ * @property ingredientes Lista dos ingredientes necessários para a receita.
+ * @property modoPreparo Lista dos passos para preparar a receita.
+ * @property tempoPreparo Tempo estimado para o preparo da receita.
+ * @property porcoes Número de porções que a receita rende.
+ * @property isFavorita Indica se a receita foi marcada como favorita pelo usuário. Valor padrão é `false`.
+ */
 data class Receita(
     val id: Int,
     val nome: String,
     val descricaoCurta: String,
-    val imagemUrl: Any,
+    val imagemUrl: Any, // Pode ser Int (ID do recurso) ou String (URL)
     val ingredientes: List<String>,
     val modoPreparo: List<String>,
     val tempoPreparo: String,
@@ -17,19 +29,42 @@ data class Receita(
     var isFavorita: Boolean = false
 )
 
+/**
+ * Representa um item de Pergunta Frequente (FAQ).
+ *
+ * @property pergunta A pergunta do FAQ.
+ * @property resposta A resposta para a pergunta do FAQ.
+ */
 data class FAQItem(
     val pergunta: String,
     val resposta: String
 )
 
+/**
+ * Representa um item na lista de compras.
+ * A anotação `@Serializable` indica que esta classe pode ser serializada/desserializada usando Kotlinx Serialization.
+ *
+ * @property id Identificador único do item, gerado automaticamente como um UUID.
+ * @property name Nome do item a ser comprado.
+ * @property isBought Indica se o item já foi comprado. Valor padrão é `false`.
+ */
 @Serializable
 data class ListaComprasItem(
-    val id: String = UUID.randomUUID().toString(),
+    val id: String = UUID.randomUUID().toString(), // Gera um ID único para cada item
     val name: String,
     var isBought: Boolean = false
 )
 
+/**
+ * Objeto singleton que fornece dados mockados (de exemplo) para o aplicativo.
+ * Inclui listas de receitas, receitas favoritas (inicialmente vazia) e perguntas frequentes.
+ * Útil para desenvolvimento e teste da interface do usuário sem depender de uma fonte de dados real.
+ */
 object DadosMockados {
+    /**
+     * Lista de receitas mockadas.
+     * Cada receita contém detalhes como nome, ingredientes, modo de preparo, etc.
+     */
     val listaDeReceitas = listOf(
         Receita(
             id = 1,
@@ -221,10 +256,17 @@ object DadosMockados {
         )
     )
 
+    /**
+     * Lista mutável para armazenar as receitas marcadas como favoritas.
+     * Inicialmente vazia.
+     */
     val listaDeFavoritosMock = mutableListOf<Receita>()
 
 
-
+    /**
+     * Lista de perguntas frequentes (FAQ) mockadas.
+     * Cada item contém uma pergunta e sua respectiva resposta.
+     */
     val listaDePerguntasFrequentes = listOf(
         FAQItem(
             pergunta = "Como adicionar uma receita aos favoritos?",
